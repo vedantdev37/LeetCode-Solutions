@@ -1,0 +1,46 @@
+class Solution:
+
+    def sumAndMultiply(self, s: str, queries: list[list[int]]) -> list[int]:
+        n = len(s)
+        modulo = 10**9 + 7
+
+        # 1. Pre-calculate powers of 10
+        pow10 = [1] * (n + 1)
+        for i in range(1, n + 1):
+            pow10[i] = (pow10[i - 1] * 10) % modulo
+
+        # 2. Setup Prefix Arrays
+        A = [0] * (n + 1)  # Running digit sum
+        B = [0] * (n + 1)  # Running integer value
+        Len = [0] * (n + 1)  # Running count of non-zeros
+
+        
+        for i in range(n):
+            d = int(s[i])
+            A[i + 1] = A[i] + d
+            if d != 0:
+                B[i + 1] = (B[i] * 10 + d) % modulo
+                Len[i + 1] = Len[i] + 1
+            else:
+                B[i + 1] = B[i]
+                Len[i + 1] = Len[i]
+
+        answers = []
+
+
+        for query in queries:
+            l = query[0]
+            r = query[1]
+
+            digits_in_window = Len[r + 1] - Len[l]
+            if digits_in_window == 0:
+                answers.append(0)
+                continue
+
+            digit_sum = A[r + 1] - A[l]
+            x = (B[r + 1] - (B[l] * pow10[digits_in_window])) % modulo
+
+            final_result = (x * digit_sum) % modulo
+            answers.append(final_result)
+
+        return answers
