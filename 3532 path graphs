@@ -1,0 +1,22 @@
+class Solution:
+    def pathExistenceQueries(self, n: int, nums: List[int], maxDiff: int, queries: List[List[int]]) -> List[bool]:
+# Array to store the 'clump ID' for each city
+        # Array to store the 'clump ID' for each city
+        clump_ids = [0] * n
+        
+        # Sweep through the sorted elevations to group connected cities
+        current_clump = 0
+        for i in range(n - 1):
+            # If the gap between adjacent cities is strictly greater than maxDiff, start a new clump
+            if nums[i + 1] - nums[i] > maxDiff:
+                current_clump += 1
+            
+            # Assign the current clump ID to the next city
+            clump_ids[i + 1] = current_clump
+            
+        # Answer each query instantly by comparing clump IDs
+        results = []
+        for u, v in queries:
+            results.append(clump_ids[u] == clump_ids[v])
+            
+        return results
