@@ -1,0 +1,50 @@
+class Solution:
+    def pathExistenceQueries(self, n: int, nums: list[int], maxDiff: int, queries: list[list[int]]) -> list[int]:
+        # Pair up values and original indices, then sort them
+        nodes = sorted([(num, i) for i, num in enumerate(nums)])
+        
+        pos = [0] * n
+        for sorted_idx, (_, orig_idx) in enumerate(nodes):
+            pos[orig_idx] = sorted_idx
+            
+        LOG = 18
+        up = [[0] * LOG for _ in range(n)]
+        
+        # Base case: Max rightward reach in 1 jump
+        r = 0
+        for l in range(n):
+            while r + 1 < n and nodes[r + 1][0] - nodes[l][0] <= maxDiff:
+                r += 1
+            up[l][0] = r
+            
+        # Precompute binary lifting states
+        for j in range(1, LOG):
+            for i in range(n):
+                up[i][j] = up[up[i][j - 1]][j - 1]
+                
+        ans = []
+        for u, v in queries:
+            if u == v:
+                ans.append(0)
+                continue
+                
+            L, R = pos[u], pos[v]
+            if L > R:
+                L, R = R, L
+                
+            # If the largest possible leap sequence can't reach R, there is no path
+            if up[L][LOG - 1] < R:
+                ans.append(-1)
+            else:
+                jumps = 0
+                curr = L
+                # Find maximum jumps while staying strictly left of R
+                for j in range(LOG - 1, -1, -1):
+                    if up[curr][j] < R:
+                        curr = up[curr][j]
+                        jumps += (1 << j)
+                
+                # One extra jump covers the remaining distance
+                ans.append(jumps + 1)
+                
+        return ans
