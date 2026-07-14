@@ -1,0 +1,36 @@
+class Solution:
+    def subsequencePairCount(self, nums: List[int]) -> int:
+        MOD = 10**9 + 7
+        import math
+        from collections import defaultdict
+        
+        # dp dictionary maps (gcd1, gcd2) -> count of ways to achieve this state.
+        # We use 0 to represent an empty subsequence.
+        dp = defaultdict(int)
+        dp[(0, 0)] = 1 
+        
+        for x in nums:
+            new_dp = defaultdict(int)
+            
+            for (g1, g2), count in dp.items():
+                # Choice 1: Skip the current element (it goes to neither sequence)
+                new_dp[(g1, g2)] = (new_dp[(g1, g2)] + count) % MOD
+                
+                # Choice 2: Add the current element to seq1
+                ng1 = x if g1 == 0 else math.gcd(g1, x)
+                new_dp[(ng1, g2)] = (new_dp[(ng1, g2)] + count) % MOD
+                
+                # Choice 3: Add the current element to seq2
+                ng2 = x if g2 == 0 else math.gcd(g2, x)
+                new_dp[(g1, ng2)] = (new_dp[(g1, ng2)] + count) % MOD
+            
+            # Move to the next index
+            dp = new_dp
+            
+        # Tally up all valid configurations where both sequences are non-empty and have matching GCDs
+        ans = 0
+        for (g1, g2), count in dp.items():
+            if g1 > 0 and g2 > 0 and g1 == g2:
+                ans = (ans + count) % MOD
+                
+        return ans
